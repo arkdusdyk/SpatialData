@@ -1,10 +1,3 @@
-//
-//  kdtree.c
-//  
-//
-//  Created by Bigdata LAB on 2019/11/05.
-//
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -21,6 +14,20 @@ struct kd_node_t
     struct kd_node_t *left, *right;
 };
 
+struct point {
+    double x;
+    double y;
+};
+
+struct Rect {
+    double min_x, min_y;
+    double max_x, max_y;
+};
+
+struct candidate_node {
+    struct kd_node_t current_node;
+    struct Rect rec;
+};
 // 거리함수 정의.
 inline double dist(struct kd_node_t *a, struct kd_node_t *b, int dim)
 {
@@ -35,7 +42,7 @@ inline double dist(struct kd_node_t *a, struct kd_node_t *b, int dim)
 }
 
 // swap 함수 정의.
-inline void swap(struct kd_node_t *x, struct kd_node_t *y)
+void swap(struct kd_node_t *x, struct kd_node_t *y)
 {
     double tmp[MAX_DIM];
     memcpy(tmp, x->x, sizeof(tmp));
@@ -92,9 +99,11 @@ struct kd_node_t* make_kdtree(struct kd_node_t *t, int len, int i, int dim)
     return n;
 }
 
-void rangeQuery(struct kd_node_t *p, double radius)
+void rangeQuery(struct kd_node_t *p, struct point qp, double radius)
 {
     //range query의 질의 조건인 질의 포인트와 질의 반경
+    // p : kdtree, qp : query point, radius : range radius
+    
 }
 
 void kNNquery(struct kd_node_t *p, int K)
@@ -106,6 +115,71 @@ void kNNquery(struct kd_node_t *p, int K)
 
 int main(void)
 {
-  
+    struct kd_node_t *kd = (struct kd_node_t*)malloc(sizeof(struct kd_node_t)*1000001);
+    int query = 0, dataset = 0;
+    double rad;     // radius for range query
+    int k;          // k value for kNN query
+    clock_t start_time, end_time;
+    // Select Query Type. 1 : Range, 2 : KNN
+    while(1){
+        printf("Select Query Type\n");
+        printf("1. Range Query\n");
+        printf("2. kNN Query\n");
+        scanf("%d", &query);
+        if(query==1 || query == 2){
+            break;
+        }
+        printf("Invalid Query Type!\n");
+    }
+    // Select Dataset, load dataset & construct KDtree
+    while(1){
+        printf("Select Dataset\n");
+        printf("1. clustered_dataset.txt\n");
+        printf("2. gaussian_dataset.txt\n");
+        printf("3. uniformed_dataset.txt\n");
+        scanf("%d", &dataset);
+        if(dataset == 1 || dataset == 2 || dataset == 3){
+            break;
+        }
+        printf("Invalid Dataset!\n");
+    }
+    // Load dataset, construct KD tree
+    FILE *fp;
+    if(dataset == 1){
+        fp = fopen("../clustered_dataset.txt", "r");
+    }
+    else if(dataset == 2){
+        fp = fopen("../gaussian_dataset.txt", "r");
+    }
+    else{
+        fp = fopen("../uniformed_dataset.txt", "r");
+    }
+    int no = 0;
+    double x,y;
+    // Construct KD Tree
+    while(fscanf(fp, "%lf, %lf", &x, &y)!= EOF){
+        kd[no].x[0] = x;
+        kd[no].x[1] = y;
+        kd[no].left = NULL;
+        kd[no].right = NULL;
+        no += 1;
+    }
+    kd = make_kdtree(kd, no, 0, MAX_DIM);
+    struct point query_p;
+    if(query == 1){                         // Range Query
+        printf("[Range Query]\n");
+        printf("Enter Query Point (x,y):\n");
+        printf("ex)30 50\n");
+        scanf("%lf %lf", &query_p.x, &query_p.y);
+        printf("Enter Range Radius:\n");
+        scanf("%lf", &rad);
+        start_time = clock();
+        rangeQuery(kd, query_p, rad);
+        end_time = clock();
+        printf("Query Time : %lf\n", (double)(end_time-start_time)/CLOCKS_PER_SEC);
+    }
+    else if (query == 2){               // kNN Query
+        printf("[KNN Query]\n");
+    }
     return 0;
 }
