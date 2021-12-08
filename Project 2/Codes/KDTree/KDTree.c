@@ -4,6 +4,9 @@
 #include <math.h>
 #include <time.h>
 
+// Set Data Value Range < 10000 (INF : 10001)
+#define DATASIZE 1000001
+#define INF 10001
 #define MAX_DIM 2
 #define COMPARE(a, b) ((a > b) ? a : b)
 
@@ -27,6 +30,7 @@ struct Rect {
 struct candidate_node {
     struct kd_node_t current_node;
     struct Rect rec;
+    int rank;
 };
 // 거리함수 정의.
 inline double dist(struct kd_node_t *a, struct kd_node_t *b, int dim)
@@ -103,7 +107,21 @@ void rangeQuery(struct kd_node_t *p, struct point qp, double radius)
 {
     //range query의 질의 조건인 질의 포인트와 질의 반경
     // p : kdtree, qp : query point, radius : range radius
-    
+    // 앞으로 할 것 : 
+    // candidate_node 스택 만들기
+    // kd tree root node부터 스택에 삽입 (rank 0부터)
+    struct candidate_node *c_stack = (struct candidate_node*)malloc(sizeof(struct candidate_node)*DATASIZE);
+    struct candidate_node *root = (struct candidate_node*)malloc(sizeof(struct candidate_node));
+    int tree_rank = 0;          // Even : cut median of x, Odd : cut median of y
+    root->current_node = p[0];
+    root->rec.min_x = 0;
+    root->rec.min_y = 0;
+    root->rec.max_x = INF;
+    root->rec.max_y = INF;
+    root->rank = tree_rank;
+
+    int top = 0;
+    c_stack[top] = root;
 }
 
 void kNNquery(struct kd_node_t *p, int K)
@@ -115,7 +133,7 @@ void kNNquery(struct kd_node_t *p, int K)
 
 int main(void)
 {
-    struct kd_node_t *kd = (struct kd_node_t*)malloc(sizeof(struct kd_node_t)*1000001);
+    struct kd_node_t *kd = (struct kd_node_t*)malloc(sizeof(struct kd_node_t)*DATASIZE);
     int query = 0, dataset = 0;
     double rad;     // radius for range query
     int k;          // k value for kNN query
