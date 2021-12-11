@@ -30,7 +30,7 @@ struct Rect {
 struct candidate_node {
     struct kd_node_t current_node;
     struct Rect rec;
-    int rank;
+    int level;
 };
 // 거리함수 정의.
 inline double dist(struct kd_node_t *a, struct kd_node_t *b, int dim)
@@ -103,25 +103,97 @@ struct kd_node_t* make_kdtree(struct kd_node_t *t, int len, int i, int dim)
     return n;
 }
 
+double euclid_dist(struct candidate_node v, struct point qp)
+{
+    // returns euclidean distance of candidate node point v and query point qp
+    double dist_x = (qp.x - v.current_node.x[0])*(qp.x - v.current_node.x[0]);
+    double dist_y = (qp.y - v.current_node.x[1])*(qp.y - v.current_node.x[1]);
+    return sqrt(dist_x + dist_y);
+}
+
 void rangeQuery(struct kd_node_t *p, struct point qp, double radius)
 {
     //range query의 질의 조건인 질의 포인트와 질의 반경
     // p : kdtree, qp : query point, radius : range radius
     // 앞으로 할 것 : 
     // candidate_node 스택 만들기
-    // kd tree root node부터 스택에 삽입 (rank 0부터)
-    struct candidate_node *c_stack = (struct candidate_node*)malloc(sizeof(struct candidate_node)*DATASIZE);
+    // kd tree root node부터 스택에 삽입 (level 0부터)
+    int obj_cnt = 0;
+    struct candidate_node *cand_stack = (struct candidate_node*)malloc(sizeof(struct candidate_node)*DATASIZE);
     struct candidate_node *root = (struct candidate_node*)malloc(sizeof(struct candidate_node));
-    int tree_rank = 0;          // Even : cut median of x, Odd : cut median of y
+    int tree_level = 1;          // Odd : cut median of x, Even : cut median of y
     root->current_node = p[0];
     root->rec.min_x = 0;
     root->rec.min_y = 0;
     root->rec.max_x = INF;
     root->rec.max_y = INF;
-    root->rank = tree_rank;
+    root->level = tree_level;
 
     int top = 0;
-    c_stack[top] = root;
+    cand_stack[top] = *root;
+    while(top>=0){           // Depth First Search 로 트리 탐색
+        struct candidate_node v;
+        v = cand_stack[top--];
+        if(euclid_dist(v, qp) <= radius){       // Check if current node fits range query.
+            printf("(%lf, %lf)\n", v.current_node.x[0], v.current_node.x[1]);           // 확인용 (나중에 주석 처리)
+            obj_cnt += 1;
+        }
+        if(v.level % 2 == 1){        // Level Odd : cut median of x
+            if(v.current_node.x[0]+radius >= qp.x)     // check left
+            {
+                if(v.current_node.left != NULL){
+                    struct candidate_node lc;
+                    lc.current_node = *v.current_node.left;
+                    lc.rec.min_x = v.rec.min_x;
+                    lc.rec.min_y = v.rec.min_y;
+                    lc.rec.max_x = v.current_node.x[0];
+                    lc.rec.max_y = v.rec.max_y;
+                    lc.level = v.level + 1;
+                    cand_stack[++top] = lc;         // push left child node to candidate stack
+                }
+            }
+            else if(qp.x >= v.current_node.x[0]-radius){     //check right
+                if(v.current_node.right != NULL){
+                    struct candidate_node rc;
+                    rc.current_node = *v.current_node.right;
+                    rc.rec.min_x = v.current_node.x[0];
+                    rc.rec.min_y = v.rec.min_y;
+                    rc.rec.max_x = v.rec.max_x;
+                    rc.rec.max_y = v.rec.max_y;
+                    rc.level = v.level + 1;
+                    cand_stack[++top] = rc;         // push right child node to candidate stack
+                }
+            }
+        }
+        else {                      // Level Even : cut median of y
+            if(v.current_node.x[1]+radius >= qp.y)     // check left
+            {
+                if(v.current_node.left != NULL){
+                    struct candidate_node lc;
+                    lc.current_node = *v.current_node.left;
+                    lc.rec.min_x = v.rec.min_x;
+                    lc.rec.min_y = v.rec.min_y;
+                    lc.rec.max_x = v.rec.max_x;
+                    lc.rec.max_y = v.current_node.x[1];
+                    lc.level = v.level + 1;
+                    cand_stack[++top] = lc;         // push left child node to candidate stack
+                }
+            }
+            else if(qp.y >= v.current_node.x[1]-radius){     //check right
+                if(v.current_node.right != NULL){
+                    struct candidate_node rc;
+                    rc.current_node = *v.current_node.right;
+                    rc.rec.min_x = v.rec.min_x;
+                    rc.rec.min_y = v.current_node.x[1];
+                    rc.rec.max_x = v.rec.max_x;
+                    rc.rec.max_y = v.rec.max_y;
+                    rc.level = v.level + 1;
+                    cand_stack[++top] = rc;         // push right child node to candidate stack
+                }
+            }
+        }
+    }
+    printf("Range Query Result : %d\n", obj_cnt);
 }
 
 void kNNquery(struct kd_node_t *p, int K)
@@ -180,7 +252,7 @@ int main(void)
         kd[no].x[1] = y;
         kd[no].left = NULL;
         kd[no].right = NULL;
-        no += 1;
+        no++;
     }
     kd = make_kdtree(kd, no, 0, MAX_DIM);
     struct point query_p;
