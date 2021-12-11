@@ -117,11 +117,11 @@ void rangeQuery(struct kd_node_t *p, struct point qp, double radius)
     // p : kdtree, qp : query point, radius : range radius
     // 앞으로 할 것 : 
     // candidate_node 스택 만들기
-    // kd tree root node부터 스택에 삽입 (level 0부터)
+    // kd tree root node부터 스택에 삽입 (level 1부터 DFS)
     int obj_cnt = 0;
     struct candidate_node *cand_stack = (struct candidate_node*)malloc(sizeof(struct candidate_node)*DATASIZE);
     struct candidate_node *root = (struct candidate_node*)malloc(sizeof(struct candidate_node));
-    int tree_level = 1;          // Odd : cut median of x, Even : cut median of y
+    int tree_level = 1;                         // Odd : cut median of x, Even : cut median of y
     root->current_node = p[0];
     root->rec.min_x = 0;
     root->rec.min_y = 0;
@@ -131,17 +131,19 @@ void rangeQuery(struct kd_node_t *p, struct point qp, double radius)
 
     int top = 0;
     cand_stack[top] = *root;
-    while(top>=0){           // Depth First Search 로 트리 탐색
+    while (top >= 0) {                                  // Depth First Search 로 트리 탐색
         struct candidate_node v;
-        v = cand_stack[top--];
-        if(euclid_dist(v, qp) <= radius){       // Check if current node fits range query.
-            printf("(%lf, %lf)\n", v.current_node.x[0], v.current_node.x[1]);           // 확인용 (나중에 주석 처리)
-            obj_cnt += 1;
+        v = cand_stack[top];
+        top--;
+        if (euclid_dist(v,qp) <= radius) {              // Check if current node fits range query.
+            printf("(%lf, %lf)\n", v.current_node.x[0], v.current_node.x[1]);
+            obj_cnt++;
         }
-        if(v.level % 2 == 1){        // Level Odd : cut median of x
-            if(v.current_node.x[0]+radius >= qp.x)     // check left
+        
+        if (v.level % 2 == 1) {                         // Level Odd : cut median of x
+            if (v.current_node.x[0] + radius >= qp.x )  // Check left
             {
-                if(v.current_node.left != NULL){
+                if (v.current_node.left != NULL){
                     struct candidate_node lc;
                     lc.current_node = *v.current_node.left;
                     lc.rec.min_x = v.rec.min_x;
@@ -149,10 +151,11 @@ void rangeQuery(struct kd_node_t *p, struct point qp, double radius)
                     lc.rec.max_x = v.current_node.x[0];
                     lc.rec.max_y = v.rec.max_y;
                     lc.level = v.level + 1;
-                    cand_stack[++top] = lc;         // push left child node to candidate stack
+                    cand_stack[top+1] = lc;               // push left child node to candidate stack     
+                    top++;
                 }
             }
-            else if(qp.x >= v.current_node.x[0]-radius){     //check right
+            if (qp.x >= v.current_node.x[0] - radius) {      // Check right
                 if(v.current_node.right != NULL){
                     struct candidate_node rc;
                     rc.current_node = *v.current_node.right;
@@ -161,13 +164,13 @@ void rangeQuery(struct kd_node_t *p, struct point qp, double radius)
                     rc.rec.max_x = v.rec.max_x;
                     rc.rec.max_y = v.rec.max_y;
                     rc.level = v.level + 1;
-                    cand_stack[++top] = rc;         // push right child node to candidate stack
+                    cand_stack[top+1] = rc;                 // push right child node to candidate stack
+                    top++;
                 }
-            }
+            }   
         }
-        else {                      // Level Even : cut median of y
-            if(v.current_node.x[1]+radius >= qp.y)     // check left
-            {
+        else {                                              // Level Even : cut median of y
+            if (v.current_node.x[1] + radius >= qp.y) {     // check left
                 if(v.current_node.left != NULL){
                     struct candidate_node lc;
                     lc.current_node = *v.current_node.left;
@@ -175,11 +178,12 @@ void rangeQuery(struct kd_node_t *p, struct point qp, double radius)
                     lc.rec.min_y = v.rec.min_y;
                     lc.rec.max_x = v.rec.max_x;
                     lc.rec.max_y = v.current_node.x[1];
-                    lc.level = v.level + 1;
-                    cand_stack[++top] = lc;         // push left child node to candidate stack
+                    lc.level = v.level+1;
+                    cand_stack[top+1] = lc;
+                    top++;
                 }
             }
-            else if(qp.y >= v.current_node.x[1]-radius){     //check right
+            if (qp.y >= v.current_node.x[1] - radius) {      // check right
                 if(v.current_node.right != NULL){
                     struct candidate_node rc;
                     rc.current_node = *v.current_node.right;
@@ -187,13 +191,14 @@ void rangeQuery(struct kd_node_t *p, struct point qp, double radius)
                     rc.rec.min_y = v.current_node.x[1];
                     rc.rec.max_x = v.rec.max_x;
                     rc.rec.max_y = v.rec.max_y;
-                    rc.level = v.level + 1;
-                    cand_stack[++top] = rc;         // push right child node to candidate stack
+                    rc.level = v.level+1;
+                    cand_stack[top+1] = rc;                // push right child node to candidate stack
+                    top++;
                 }
             }
         }
     }
-    printf("Range Query Result : %d\n", obj_cnt);
+    printf("count: %d\n", obj_cnt);
 }
 
 void kNNquery(struct kd_node_t *p, int K)
