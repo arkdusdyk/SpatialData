@@ -7,6 +7,10 @@ struct point {
     double x;
     double y;
 };
+struct knn {
+	struct point p;
+	double dist;
+};
 double euclid_dist(struct point v, struct point qp)        //distance btw two points
 {
     // returns euclidean distance of two points
@@ -15,16 +19,59 @@ double euclid_dist(struct point v, struct point qp)        //distance btw two po
     return sqrt(dist_x + dist_y);
 }
 void rangeQuery(struct point *dp, struct point qp, double radius){	// bruteforce range Query
-	int obj_cnt;
+	int obj_cnt = 0;
 	for(int i=0;i<DATASIZE;i++){
 		if(euclid_dist(dp[i],qp) < radius){
+			printf("(%lf, %lf)\n", dp[i].x, dp[i].y);
 			obj_cnt++;
 		}
 	}
 	printf("Query Object Count: %d\n", obj_cnt);
 }
 void kNNquery(struct point *dp, struct point qp, int k){	// bruteforce kNN Query
-	
+	int obj_cnt = 0;
+	struct knn *top_k;
+	top_k = (struct knn*)malloc(sizeof(struct knn)*k);
+	for(int i=0;i<DATASIZE;i++){
+		double dist = euclid_dist(dp[i],qp);
+		if(obj_cnt==0){
+			top_k[0].p = dp[i];
+			top_k[0].dist = dist;
+			obj_cnt++;
+		}
+		else{
+			if(dist<top_k[obj_cnt-1].dist){
+				int j;
+				for(j=0;j<obj_cnt;j++){
+					if(dist < top_k[j].dist){
+						break;
+					}
+				}
+				if(obj_cnt<k){
+					for(int l=obj_cnt;l>j;l--){
+						top_k[l].p = top_k[l-1].p;
+						top_k[l].dist = top_k[l-1].dist;
+					}
+					top_k[j].p = dp[i];
+					top_k[j].dist = dist;
+					obj_cnt++;
+				}
+				else{
+					for(int l=k-1;l>j;l--){
+						top_k[l].p = top_k[l-1].p;
+						top_k[l].dist = top_k[l-1].dist;
+					}
+					top_k[j].p = dp[i];
+					top_k[j].dist = dist;
+				}
+			}
+		}
+	}
+
+	for(int i=0;i<k;i++){
+		printf("(%lf, %lf) : %lf\n", top_k[i].p.x, top_k[i].p.y, top_k[i].dist);
+	}
+	printf("Query Object Count: %d\n", obj_cnt);
 }
 int main(void)
 {
