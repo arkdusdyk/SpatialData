@@ -1,17 +1,22 @@
-# Spatial Data Project #2 <br>Topological Relationships with Real Data
+# Spatial Data Project #2 <br>Range Query & KNN Query Processing
 
-* <b> Environment </b>: Oracle 18c & Oracle SQL developer
+* <b>Objective</b> : Comparison of Range Query & KNN Query Processing using Bruteforce, KD-Tree, R-Tree
 
-* <b>Objective</b> : Show 8 different topological relationships of real geo-data through SQL.
-
-* <b>Requirements</b> : 
-    1) Real Geospatial data (using Google Maps)
-
-    2) SQL (CREATE, INSERT, SELECT)
-    
-    Show 8 different topological relationships with SELECT.<br>(disjoint, contains, inside, equal, meet, covers, coveredby, overlap)
-
-    3) SCHEMA
-    
-
-* <b> Documentation </b>: 20161575.pdf
+* <b>File Requirements</b> : 
+    1) Datasets.txt 
+    - clustered_dataset.txt
+    - gaussian_dataset.txt
+    - uniformed_dataset.txt
+<br>
+    2) BruteForce
+    - Range Query in Bruteforce
+    - K-NN Query in Bruteforce
+<br>
+    3) KDTree
+    - Range Query using KD-Tree
+    - K-NN Query using KD-Tree
+<br>
+    4) RTree
+    - Range Query using R-Tree
+    - K-NN Query using R-Tree
+    <br>

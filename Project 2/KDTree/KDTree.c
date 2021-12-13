@@ -5,7 +5,7 @@
 #include <time.h>
 
 // Set Data Value Range < 10000 (INF : 10001)
-#define DATASIZE 1000001
+#define DATASIZE 1000000
 #define INF 10001
 #define MAX_DIM 2
 #define COMPARE(a, b) ((a > b) ? a : b)
@@ -32,8 +32,80 @@ struct candidate_node {
     struct Rect rec;
     int level;
 };
+
+struct knn_node {
+    struct kd_node_t node;
+    double distance;
+    int level;
+};
+
+struct priority_queue {
+    double Heap[DATASIZE];
+    int size;
+};
+
+struct priority_queue resultQ;
+
+void q_swap(double *a, double *b){
+    double tmp = *a;
+    *a = *b;
+    *b = tmp;
+}
+int q_push(double value){
+    if(resultQ.size +1 > DATASIZE){
+        return 0;
+    }
+    resultQ.Heap[resultQ.size] = value;
+    int cur = resultQ.size;
+    int parent = (resultQ.size -1)/2;
+    while(cur>0 && resultQ.Heap[cur]>resultQ.Heap[parent]){
+        q_swap(&resultQ.Heap[cur], &resultQ.Heap[parent]);
+        cur = parent;
+        parent = (parent-1)/2;
+    }
+    resultQ.size ++;
+    return 1;
+}
+double q_pop(){
+    if (resultQ.size<=0){
+        return 0;
+    }
+    double ret = resultQ.Heap[0];
+    resultQ.size--;
+    resultQ.Heap[0] = resultQ.Heap[resultQ.size];
+    int cur = 0;
+    int left = cur*2 +1;
+    int right = cur*2 +2;
+    int maxNode = cur;
+    while(left<resultQ.size){
+        if(resultQ.Heap[maxNode]<resultQ.Heap[left]){
+            maxNode = left;
+        }
+        if(right<resultQ.size && resultQ.Heap[maxNode]<resultQ.Heap[right]){
+            maxNode = right;
+        }
+        if(maxNode == cur){
+            break;
+        }
+        else{
+            q_swap(&resultQ.Heap[cur], &resultQ.Heap[maxNode]);
+            cur = maxNode;
+            left = cur*2+1;
+            right = cur*2+2;
+        }
+    }
+    return ret;
+}
+int q_empty(){
+    if (resultQ.size == 0){
+        return 1;
+    }
+    else{
+        return 0;
+    }
+}
 // 거리함수 정의.
-inline double dist(struct kd_node_t *a, struct kd_node_t *b, int dim)
+double dist(struct kd_node_t *a, struct kd_node_t *b, int dim)
 {
     double t, d = 0;
     while (dim--)
@@ -121,7 +193,7 @@ void rangeQuery(struct kd_node_t *p, struct point qp, double radius)
     int obj_cnt = 0;
     struct candidate_node *cand_stack = (struct candidate_node*)malloc(sizeof(struct candidate_node)*DATASIZE);
     struct candidate_node *root = (struct candidate_node*)malloc(sizeof(struct candidate_node));
-    int tree_level = 1;                         // Odd : cut median of x, Even : cut median of y
+    int tree_level = 1;                                 // Odd : cut median of x, Even : cut median of y
     root->current_node = p[0];
     root->rec.min_x = 0;
     root->rec.min_y = 0;
@@ -136,7 +208,7 @@ void rangeQuery(struct kd_node_t *p, struct point qp, double radius)
         v = cand_stack[top];
         top--;
         if (euclid_dist(v,qp) <= radius) {              // Check if current node fits range query.
-            printf("(%lf, %lf)\n", v.current_node.x[0], v.current_node.x[1]);
+            //printf("(%lf, %lf)\n", v.current_node.x[0], v.current_node.x[1]);
             obj_cnt++;
         }
         
@@ -179,7 +251,7 @@ void rangeQuery(struct kd_node_t *p, struct point qp, double radius)
                     lc.rec.max_x = v.rec.max_x;
                     lc.rec.max_y = v.current_node.x[1];
                     lc.level = v.level+1;
-                    cand_stack[top+1] = lc;
+                    cand_stack[top+1] = lc;                 // push left child node to candidate stack
                     top++;
                 }
             }
@@ -198,13 +270,60 @@ void rangeQuery(struct kd_node_t *p, struct point qp, double radius)
             }
         }
     }
-    printf("count: %d\n", obj_cnt);
+    printf("Query Object Count: %d\n", obj_cnt);
 }
 
-void kNNquery(struct kd_node_t *p, int K)
+void kNNquery(struct kd_node_t *kd,struct kd_node_t *qp, int K, double radius, int level)
 {
-    //kNN query의 질의조건인 질의 포인트와 최근접이웃 개수
-    
+    // kNN query의 질의조건인 질의 포인트와 최근접이웃 개수
+    // kd : kd tree, pq : query point, k : k-NN, radius : range, level : current tree level
+    // priority queue resultQ를 만들고, kNNquery를 recursive하게 root부터 탐색해나가면서 범위 pruning
+    double check_dist = dist(kd, qp, MAX_DIM);
+    if (check_dist <= radius){
+        q_push(check_dist);
+        if(resultQ.size == K){
+            radius = resultQ.Heap[0];
+            while(q_empty()){       //ResultQ 초기화
+                q_pop();
+            }
+        }
+    }
+    if(level%2==1){                 // Level Odd : cut median of x
+        if(kd->x[0] >= qp->x[0]){   // Check left
+            if(kd->left != NULL){
+                kNNquery(kd->left, qp, K, radius, level+1);
+            }
+            if((kd->x[0] - radius <= qp->x[0]) && (kd->right!=NULL)){
+                kNNquery(kd->right, qp, K, radius, level+1);
+            }
+        }
+        else{
+            if(kd->right != NULL){      //check right
+                kNNquery(kd->right, qp, K, radius, level+1);
+            }
+            if((kd->x[0] + radius >=qp->x[0]) && (kd->left!= NULL)){
+                kNNquery(kd->left, qp, K, radius, level+1);
+            }
+        }
+    }
+    else{                           // Level Even : cut median of y
+        if(kd->x[1] >= qp->x[1]){    // check left
+            if(kd->left != NULL){
+                kNNquery(kd->left, qp, K, radius, level+1);
+            }
+            if((kd->x[1] - radius <= qp->x[1])&&(kd->right != NULL)){       //check right
+                kNNquery(kd->right, qp, K, radius, level+1);
+            }
+        }
+        else{
+            if(kd->right!=NULL){        //check right
+                kNNquery(kd->right, qp, K, radius, level+1);
+            }
+            if((kd->x[1] + radius >= qp->x[1])&&(kd->left!=NULL)){        //check right
+                kNNquery(kd->left, qp, K, radius, level+1);
+            }
+        }
+    }
 }
 
 
@@ -216,6 +335,7 @@ int main(void)
     int k;          // k value for kNN query
     clock_t start_time, end_time;
     // Select Query Type. 1 : Range, 2 : KNN
+    printf("KDTree Query!!!\n");
     while(1){
         printf("Select Query Type\n");
         printf("1. Range Query\n");
@@ -241,13 +361,13 @@ int main(void)
     // Load dataset, construct KD tree
     FILE *fp;
     if(dataset == 1){
-        fp = fopen("../clustered_dataset.txt", "r");
+        fp = fopen("../datasets/clustered_dataset.txt", "r");
     }
     else if(dataset == 2){
-        fp = fopen("../gaussian_dataset.txt", "r");
+        fp = fopen("../datasets/gaussian_dataset.txt", "r");
     }
     else{
-        fp = fopen("../uniformed_dataset.txt", "r");
+        fp = fopen("../datasets/uniformed_dataset.txt", "r");
     }
     int no = 0;
     double x,y;
@@ -263,18 +383,69 @@ int main(void)
     struct point query_p;
     if(query == 1){                         // Range Query
         printf("[Range Query]\n");
+        //Query Point, Radius 직접 입력
+        /**
         printf("Enter Query Point (x,y):\n");
         printf("ex)30 50\n");
         scanf("%lf %lf", &query_p.x, &query_p.y);
-        printf("Enter Range Radius:\n");
+        printf("Enter Range Radius: ");
         scanf("%lf", &rad);
         start_time = clock();
         rangeQuery(kd, query_p, rad);
         end_time = clock();
-        printf("Query Time : %lf\n", (double)(end_time-start_time)/CLOCKS_PER_SEC);
+        printf("Query Time : %.4lf ms\n", (double)(end_time-start_time));
+        **/
+        query_p.x = 250.0;                  // Test Data for Documentation (query point : middle point of given dataset)
+        query_p.y = 250.0;
+        double radius[6] = {10, 20, 40, 60, 80, 100};
+        printf("Test Query Point (x,y) : (%lf, %lf)\n", query_p.x, query_p.y);
+        for(int i=0;i<6;i++){
+            printf("Range query for range : %.2lf\n", radius[i]);
+            start_time = clock();
+            rangeQuery(kd, query_p, radius[i]);
+            end_time = clock();
+            printf("Query Time : %.4lf ms\n", (double)(end_time-start_time));
+            printf("\n");
+        }
     }
     else if (query == 2){               // kNN Query
         printf("[KNN Query]\n");
+        //Query Point, Radius 직접 입력
+        /**printf("Enter Query Point (x,y):\n");
+        printf("ex)30 50\n");
+        scanf("%lf %lf", &query_p.x, &query_p.y);
+        printf("Enter Range Radius\n");
+        scanf("%lf", &rad);
+        printf("Enter K: ");
+        scanf("%d", &k);
+        struct kd_node_t *qp = (struct kd_node_t*)malloc(sizeof(struct kd_node_t));
+        qp->x[0] = query_p.x;
+        qp->x[1] = query_p.y;
+        resultQ.size = 0;
+        start_time = clock();
+        int tree_level = 1;
+        kNNquery(kd, qp, k, rad, tree_level);
+        end_time = clock();
+        printf("Query Time : %.4lf ms\n", (double)(end_time-start_time));
+        **/
+        query_p.x = 250.0;                  // Test Data for Documentation (query point : middle point of given dataset)
+        query_p.y = 250.0;
+        struct kd_node_t *qp = (struct kd_node_t*)malloc(sizeof(struct kd_node_t));
+        qp->x[0] = query_p.x;
+        qp->x[1] = query_p.y;
+        double rad = 100;
+        resultQ.size = 0;
+        int k_list[11] = {1, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100};
+        printf("Test Query Point (x,y) : (%lf, %lf)\n", query_p.x, query_p.y);
+        for(int i=0;i<11;i++){
+            printf("KNN query for range: %.1lf, K : %d\n", rad, k_list[i]);
+            start_time = clock();
+            int tree_level = 1;
+            kNNquery(kd, qp, k_list[i], rad, tree_level);
+            end_time = clock();
+            printf("Query Time : %.4lf ms\n", (double)(end_time-start_time));
+            printf("\n");
+        }
     }
     return 0;
 }

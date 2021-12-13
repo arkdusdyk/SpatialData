@@ -108,13 +108,13 @@ int main(void)
     // Load dataset
     FILE *fp;
     if(dataset == 1){
-        fp = fopen("../clustered_dataset.txt", "r");
+        fp = fopen("../datasets/clustered_dataset.txt", "r");
     }
     else if(dataset == 2){
-        fp = fopen("../gaussian_dataset.txt", "r");
+        fp = fopen("../datasets/gaussian_dataset.txt", "r");
     }
     else{
-        fp = fopen("../uniformed_dataset.txt", "r");
+        fp = fopen("../datasets/uniformed_dataset.txt", "r");
     }
     int no =0;
     double x,y;
@@ -148,7 +148,7 @@ int main(void)
 		    start_time = clock();
 			rangeQuery(input_data, query_p, radius[i]);
 		    end_time = clock();
-		    printf("Query Time : %lf\n", (double)(end_time-start_time));
+		    printf("Query Time : %.4lf ms\n", (double)(end_time-start_time));
 		    printf("\n");
         }
         **/
@@ -177,7 +177,7 @@ int main(void)
 		    start_time = clock();
 			kNNquery(input_data, query_p, k_list[i]);
 		    end_time = clock();
-		    printf("Query Time : %lf\n", (double)(end_time-start_time));
+		    printf("Query Time : %.4lf ms\n", (double)(end_time-start_time));
 		    printf("\n");
         }**/
     }
