@@ -24,4 +24,4 @@
     
         - Range Query using R-Tree
         - K-NN Query using R-Tree
-    <br>
+<br>
