@@ -126,27 +126,60 @@ int main(void)
     struct point query_p;
     if(query == 1){                         // Range Query
         printf("[Range Query]\n");
+        //Query Point, Radius 직접 입력
         printf("Enter Query Point (x,y):\n");
         printf("ex)30 50\n");
         scanf("%lf %lf", &query_p.x, &query_p.y);
-        printf("Enter Range Radius:\n");
+        printf("Enter Range Radius: ");
         scanf("%lf", &rad);
+
+        printf("Test Query Point (x,y) : (%lf, %lf)\n", query_p.x, query_p.y);
         start_time = clock();
-    	rangeQuery(input_data, query_p, rad);
-        end_time = clock();
-        printf("Query Time : %lf\n", (double)(end_time-start_time));
+		rangeQuery(input_data, query_p, rad);
+		end_time = clock();
+		printf("Query Time : %.4lf ms\n", (double)(end_time-start_time));
+        /**
+        query_p.x = 250.0;					// Test Data for Documentation (query point : middle point of given dataset)
+        query_p.y = 250.0;
+        double radius[6] = {10, 20, 40, 60, 80, 100};
+        printf("Test Query Point (x,y) : (%lf, %lf)\n", query_p.x, query_p.y);
+        for(int i=0;i<6;i++){
+        	printf("Range query for range : %.2lf\n", radius[i]);
+		    start_time = clock();
+			rangeQuery(input_data, query_p, radius[i]);
+		    end_time = clock();
+		    printf("Query Time : %lf\n", (double)(end_time-start_time));
+		    printf("\n");
+        }
+        **/
     }
     else if (query == 2){               // kNN Query
         printf("[KNN Query]\n");
+        //Query Point, K값 직접 입력
         printf("Enter Query Point (x,y):\n");
         printf("ex)30 50\n");
         scanf("%lf %lf", &query_p.x, &query_p.y);
-        printf("Enter K:\n");
+        printf("Enter K: ");
         scanf("%d", &k);
-        start_time = clock();
-        kNNquery(input_data, query_p, k);
-        end_time = clock();
-        printf("Query Time : %lf\n", (double)(end_time-start_time));
+
+        printf("KNN query for K : %d\n", k);
+		start_time = clock();
+		kNNquery(input_data, query_p,k);
+		end_time = clock();
+		printf("Query Time : %.4lf ms\n", (double)(end_time-start_time));
+        /**
+        query_p.x = 250.0;					// Test Data for Documentation (query point : middle point of given dataset)
+        query_p.y = 250.0;
+        int k_list[11] = {1, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100};
+        printf("Test Query Point (x,y) : (%lf, %lf)\n", query_p.x, query_p.y);
+        for(int i=0;i<11;i++){
+        	printf("KNN query for K : %d\n", k_list[i]);
+		    start_time = clock();
+			kNNquery(input_data, query_p, k_list[i]);
+		    end_time = clock();
+		    printf("Query Time : %lf\n", (double)(end_time-start_time));
+		    printf("\n");
+        }**/
     }
 
 	return 0;
