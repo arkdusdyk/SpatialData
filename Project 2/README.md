@@ -4,20 +4,24 @@
 
 * <b>File Requirements</b> : 
 <br>
-    1) Datasets.txt 
-    - clustered_dataset.txt
-    - gaussian_dataset.txt
-    - uniformed_dataset.txt
+    1) Datasets 
+    
+        - clustered_dataset.txt
+        - gaussian_dataset.txt
+        - uniformed_dataset.txt
 <br>
     2) BruteForce
-    - Range Query in Bruteforce
-    - K-NN Query in Bruteforce
+    
+        - Range Query in Bruteforce
+        - K-NN Query in Bruteforce
 <br>
     3) KDTree
-    - Range Query using KD-Tree
-    - K-NN Query using KD-Tree
+    
+        - Range Query using KD-Tree
+        - K-NN Query using KD-Tree
 <br>
     4) RTree
-    - Range Query using R-Tree
-    - K-NN Query using R-Tree
+    
+        - Range Query using R-Tree
+        - K-NN Query using R-Tree
     <br>
