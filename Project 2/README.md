@@ -20,7 +20,7 @@
         - Range Query using KD-Tree
         - K-NN Query using KD-Tree
 <br>
-    4) RTree
+    4) RTree (In Progress)
     
         - Range Query using R-Tree
         - K-NN Query using R-Tree

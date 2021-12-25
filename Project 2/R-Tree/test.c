@@ -16,9 +16,9 @@
 //     { {7, 1, 0, 9, 2, 0} }
 // };
 
-RTREEMBR search_rect = {
-    {6, 4, 0, 10, 6, 0}   /* search will find above rects that this one overlaps */
-};
+// RTREEMBR search_rect = {
+//     {6, 4, 0, 10, 6, 0}    search will find above rects that this one overlaps 
+// };
 
 RTREEMBR rects[DATASIZE];
 int nrects = sizeof(rects) / sizeof(rects[0]);
