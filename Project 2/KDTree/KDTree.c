@@ -384,7 +384,7 @@ int main(void)
     if(query == 1){                         // Range Query
         printf("[Range Query]\n");
         //Query Point, Radius 직접 입력
-        /**
+        
         printf("Enter Query Point (x,y):\n");
         printf("ex)30 50\n");
         scanf("%lf %lf", &query_p.x, &query_p.y);
@@ -394,8 +394,8 @@ int main(void)
         rangeQuery(kd, query_p, rad);
         end_time = clock();
         printf("Query Time : %.4lf ms\n", (double)(end_time-start_time));
-        **/
-        query_p.x = 250.0;                  // Test Data for Documentation (query point : middle point of given dataset)
+        /**
+        query_p.x = 250.0;                  // Test Data for Experiment (query point : middle point of given dataset)
         query_p.y = 250.0;
         double radius[6] = {10, 20, 40, 60, 80, 100};
         printf("Test Query Point (x,y) : (%lf, %lf)\n", query_p.x, query_p.y);
@@ -407,11 +407,12 @@ int main(void)
             printf("Query Time : %.4lf ms\n", (double)(end_time-start_time));
             printf("\n");
         }
+        **/
     }
     else if (query == 2){               // kNN Query
         printf("[KNN Query]\n");
         //Query Point, Radius 직접 입력
-        /**printf("Enter Query Point (x,y):\n");
+        printf("Enter Query Point (x,y):\n");
         printf("ex)30 50\n");
         scanf("%lf %lf", &query_p.x, &query_p.y);
         printf("Enter Range Radius\n");
@@ -427,8 +428,8 @@ int main(void)
         kNNquery(kd, qp, k, rad, tree_level);
         end_time = clock();
         printf("Query Time : %.4lf ms\n", (double)(end_time-start_time));
-        **/
-        query_p.x = 250.0;                  // Test Data for Documentation (query point : middle point of given dataset)
+        /**
+        query_p.x = 250.0;                  // Test Data for Experiment (query point : middle point of given dataset)
         query_p.y = 250.0;
         struct kd_node_t *qp = (struct kd_node_t*)malloc(sizeof(struct kd_node_t));
         qp->x[0] = query_p.x;
@@ -446,6 +447,7 @@ int main(void)
             printf("Query Time : %.4lf ms\n", (double)(end_time-start_time));
             printf("\n");
         }
+        **/
     }
     return 0;
 }
