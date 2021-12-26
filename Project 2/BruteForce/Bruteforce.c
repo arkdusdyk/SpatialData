@@ -139,7 +139,7 @@ int main(void)
 		end_time = clock();
 		printf("Query Time : %.4lf ms\n", (double)(end_time-start_time));
         /**
-        query_p.x = 250.0;					// Test Data for Documentation (query point : middle point of given dataset)
+        query_p.x = 250.0;					// Test Data for Experiment (query point : middle point of given dataset)
         query_p.y = 250.0;
         double radius[6] = {10, 20, 40, 60, 80, 100};
         printf("Test Query Point (x,y) : (%lf, %lf)\n", query_p.x, query_p.y);
@@ -168,7 +168,7 @@ int main(void)
 		end_time = clock();
 		printf("Query Time : %.4lf ms\n", (double)(end_time-start_time));
         /**
-        query_p.x = 250.0;					// Test Data for Documentation (query point : middle point of given dataset)
+        query_p.x = 250.0;					// Test Data for Experiment (query point : middle point of given dataset)
         query_p.y = 250.0;
         int k_list[11] = {1, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100};
         printf("Test Query Point (x,y) : (%lf, %lf)\n", query_p.x, query_p.y);
