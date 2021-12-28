@@ -82,6 +82,8 @@ int main()
     int query, dataset;
     double rad;     // radius for range query
     int k;          // k value for kNN query
+    int no = 0, i;
+    double x,y;
     clock_t start_time, end_time;
     printf("RTree Query!!!\n");
     while(1){
@@ -94,7 +96,7 @@ int main()
         }
         printf("Invalid Query Type!\n");
     }
-    // Select Dataset, load dataset & construct KDtree
+    // Select Dataset, load dataset & construct Rtree
     while(1){
         printf("Select Dataset\n");
         printf("1. clustered_dataset.txt\n");
@@ -109,34 +111,24 @@ int main()
     // Load dataset, construct RTree
     FILE *fp;
     if(dataset == 1){
-        fp = fopen("../clustered_dataset.txt", "r");
+        fp = fopen("../datasets/clustered_dataset.txt", "r");
     }
     else if(dataset == 2){
-        fp = fopen("../gaussian_dataset.txt", "r");
+        fp = fopen("../datasets/gaussian_dataset.txt", "r");
     }
     else{
-        fp = fopen("../uniformed_dataset.txt", "r");
+        fp = fopen("../datasets/uniformed_dataset.txt", "r");
     }
-    int no = 0;
-    double x,y;
-    //inputRTree(fp);
-    // Readline, Insert R Tree
-    // while(fscanf(fp, "%lf, %lf", &x, &y)!= EOF){
-    //     rects[no].bound[0] = x;
-    //     rects[no].bound[1] = y;
-    //     rects[no].bound[2] = x;
-    //     rects[no].bound[3] = y;
-    //     no++;
-    // }
-    for(int i=0;i<DATASIZE;i++){
-        fscanf(fp,"%lf, %lf", &x, &y);
-        rects[i].bound[0] = x;
-        rects[i].bound[1] = y;
-        rects[i].bound[2] = x;
-        rects[i].bound[3] = y;
+    // Readline, make MBR
+    while(fscanf(fp, "%lf, %lf", &x, &y)!= EOF){
+        rects[no].bound[0] = x;
+        rects[no].bound[1] = y;
+        rects[no].bound[2] = x;
+        rects[no].bound[3] = y;
+        no++;
     }
+
     /* Insert all the testing data rects */
-    int i;
     for(i=0; i<nrects; i++){
         RTreeInsertRect(&rects[i],  /* the mbr being inserted */
                         i+10,        /* i+1 is mbr ID. ID MUST NEVER BE ZERO */
