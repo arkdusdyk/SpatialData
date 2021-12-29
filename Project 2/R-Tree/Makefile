@@ -1,7 +1,7 @@
 SRC = $(wildcard *.c)
 OBJ = $(SRC:.c=.o)
 
-CFLAGS = -g -O0
+CFLAGS = -g -O0 -w
 LDFLAGS = -lm
 
 TARGET = test

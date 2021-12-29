@@ -55,13 +55,13 @@ void rangeQuery(RTREENODE *r_node, struct point qp, double radius)
     int i;
     if(r_node->level > 0){
         for(i=0;i<MAXCARD;i++){
-            if(r_node->branch[i].child != NULL){
+            if(r_node->branch[i].child){
                 double min_x = r_node->branch[i].mbr.bound[0];
                 double min_y = r_node->branch[i].mbr.bound[1];
                 double max_x = r_node->branch[i].mbr.bound[2];
                 double max_y = r_node->branch[i].mbr.bound[3];
 
-                if((rad >= (min_x - qp.x)) && (rad>= (qp.x-max_x)) && (rad >= (min_y - qp.y)) && (rad >= (qp.y - min_y))){
+                if((rad >= (min_x - qp.x)) && (rad>= (qp.x-max_x)) && (rad >= (min_y - qp.y)) && (rad >= (qp.y - max_y))){
                     rangeQuery(r_node->branch[i].child, qp, radius);
                 }
             }
