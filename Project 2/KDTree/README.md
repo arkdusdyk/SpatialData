@@ -1,17 +1,17 @@
-## [Spatial Data Term Project #2]
+# [Spatial Data Term Project #2]
 ## KDTree Range, KNN Query
 
-* <b> 컴파일 방법: </b>
+* <b> 컴파일 방법: </b> </br>
 
-gcc -o KDTree KDTree.c
+  - <b> gcc -o KDTree KDTree.c :</b> (KDTree compile)
 
-(KDTree 실행파일 생성)
+* <b> 실행 방법: </b> </br>
 
-* <b> 실행 방법 </b>:
+  - <b>./KDTree :</b> (실행파일 실행)
 
-./KDTree
+</br>
+** <b> 실행은 출력 따라서 진행 </b> **
+</br>
 
-(실행파일 실행)
-
-
-* <b> 실행은 출력 따라서 진행 </b>
+* <b> 실행 예시: </b> </br>
+  ![Screen Shot 2021-12-30 at 5 57 48 AM](https://user-images.githubusercontent.com/69205130/147702884-2777ac2d-15f7-4bb7-a534-23cefb786e9b.png)
