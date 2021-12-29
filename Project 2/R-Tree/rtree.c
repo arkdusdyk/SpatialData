@@ -798,7 +798,7 @@ void RTreePrintNode( RTREENODE *node, int depth )
 
 #pragma warning(push)    /* C4311 */
 #pragma warning( disable : 4311 )
-    fprintf (stdout, "  level=%d  count=%d  address=%o ", node->level, node->count, (unsigned int) node);
+    fprintf (stdout, "  level=%d  count=%d  address=%o ", node->level, node->count, (unsigned int) node);  
 #pragma warning(pop)
 
     for (i=0; i<node->count; i++)

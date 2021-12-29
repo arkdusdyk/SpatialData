@@ -22,6 +22,7 @@
 
 RTREEMBR rects[DATASIZE];
 int nrects = sizeof(rects) / sizeof(rects[0]);
+double rad;
 int obj_cnt = 0;
 struct point {
     double x;
@@ -60,7 +61,7 @@ void rangeQuery(RTREENODE *r_node, struct point qp, double radius)
                 double max_x = r_node->branch[i].mbr.bound[2];
                 double max_y = r_node->branch[i].mbr.bound[3];
 
-                if((radius >= (min_x - qp.x)) && (radius>= (qp.x-max_x)) && (radius >= (min_y - qp.y)) && (radius >= (qp.y - min_y))){
+                if((rad >= (min_x - qp.x)) && (rad>= (qp.x-max_x)) && (rad >= (min_y - qp.y)) && (rad >= (qp.y - min_y))){
                     rangeQuery(r_node->branch[i].child, qp, radius);
                 }
             }
@@ -69,7 +70,7 @@ void rangeQuery(RTREENODE *r_node, struct point qp, double radius)
     else{
         for(i=0;i<MAXCARD;i++){
             if(r_node->branch[i].child){
-                if(mbr_point_dist(r_node->branch[i].mbr, qp) <= radius){
+                if(mbr_point_dist(r_node->branch[i].mbr, qp) <= sqrt(radius)){
                     obj_cnt++;
                 }
             }
@@ -80,7 +81,6 @@ int main()
 {
     RTREENODE* root = RTreeCreate();
     int query, dataset;
-    double rad;     // radius for range query
     int k;          // k value for kNN query
     int no = 0, i;
     double x,y;
@@ -119,6 +119,7 @@ int main()
     else{
         fp = fopen("../datasets/uniformed_dataset.txt", "r");
     }
+    printf("Constructing MBR and R-Tree...\n");
     // Readline, make MBR
     while(fscanf(fp, "%lf, %lf", &x, &y)!= EOF){
         rects[no].bound[0] = x;
@@ -127,7 +128,6 @@ int main()
         rects[no].bound[3] = y;
         no++;
     }
-
     /* Insert all the testing data rects */
     for(i=0; i<nrects; i++){
         RTreeInsertRect(&rects[i],  /* the mbr being inserted */
@@ -136,22 +136,21 @@ int main()
                         0            /* always zero which means to add from the root */
             );
     }
-
-    // struct point query_p;
-    // if(query == 1){                         // Range Query
-    //     printf("[Range Query]\n");
-    //     printf("Enter Query Point (x,y):\n");
-    //     printf("ex)30 50\n");
-    //     scanf("%lf %lf", &query_p.x, &query_p.y);
-    //     printf("Enter Range Radius:\n");
-    //     scanf("%lf", &rad);
+    struct point query_p;
+    if(query == 1){                         // Range Query
+        printf("[Range Query]\n");
+        printf("Enter Query Point (x,y):\n");
+        printf("ex)30 50\n");
+        scanf("%lf %lf", &query_p.x, &query_p.y);
+        printf("Enter Range Radius:\n");
+        scanf("%lf", &rad);
         
-    //     start_time = clock();
-    //     rangeQuery(root, query_p,rad);
-    //     end_time = clock();
-    //     printf("Query Object Count: %d\n", obj_cnt);
-    //     printf("Query Time : %lf\n", (double)(end_time-start_time)/CLOCKS_PER_SEC);
-    // }
+        start_time = clock();
+        rangeQuery(root, query_p,rad*rad);
+        end_time = clock();
+        printf("Query Object Count: %d\n", obj_cnt);
+        printf("Query Time : %.4lf ms\n", (double)(end_time-start_time));
+    }
     //else if (query == 2){               // kNN Query
     //     printf("[KNN Query]\n");
     //     printf("Enter Query Point (x,y):\n");

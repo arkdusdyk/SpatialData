@@ -22,7 +22,7 @@
 
 /* PAGE_SIZE is normally the natural page size of the machine */
 #define  PAGE_SIZE    512
-#define  DIMS_NUMB    3       /* number of dimensions */
+#define  DIMS_NUMB    2       /* number of dimensions */
 #define  SIDES_NUMB   2*DIMS_NUMB
 
 /* typedef float REALTYPE; */
@@ -43,6 +43,7 @@ typedef struct _RTREEMBR
 typedef struct _RTREEBRANCH
 {        
     RTREEMBR    mbr;
+    double mind;
     struct _RTREENODE *child;    /* mbr id */
 }RTREEBRANCH;
 
