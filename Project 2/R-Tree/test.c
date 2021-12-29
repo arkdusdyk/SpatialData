@@ -1,14 +1,17 @@
 /**
    rtree lib usage example app.
 */
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <math.h>
+#include <cstdio>
 #include <time.h>
-#include "rtree.h"
+#include <sys/time.h>
+#include <unistd.h>
+#include <queue>
+#include <functional>
+extern "C"{
+    #include "rtree.h"
+}
 #define DATASIZE 1000000
-
+#define MIN(a, b) (((a) < (b)) ? (a) : (b))
 // RTREEMBR rects[] = {
 //     { {0, 0, 0, 2, 2, 0} },  /* xmin, ymin, zmin, xmax, ymax, zmax (for 3 dimensional RTree) */
 //     { {5, 5, 0, 7, 7, 0} },
@@ -19,6 +22,14 @@
 // RTREEMBR search_rect = {
 //     {6, 4, 0, 10, 6, 0}    search will find above rects that this one overlaps 
 // };
+using namespace std;
+struct comp{
+    bool operator()(RTREEBRANCH const& s1, RTREEBRANCH const& s2)
+    {
+        return s1.mind > s2.mind;
+    };
+};
+priority_queue< RTREEBRANCH, vector<RTREEBRANCH>, comp > min_heap;
 
 RTREEMBR rects[DATASIZE];
 int nrects = sizeof(rects) / sizeof(rects[0]);
@@ -44,6 +55,26 @@ double mbr_point_dist(RTREEMBR mbr, struct point qp)           //distance btw qu
     return sqrt(dist_x + dist_y);
 }   
 
+double min_dist(RTREEMBR mbr, struct point qp){
+    double min_x = mbr.bound[0];
+    double min_y = mbr.bound[1];
+    double max_x = mbr.bound[2];
+    double max_y = mbr.bound[3];
+    if((min_x <= qp.x) && (qp.x <= max_x)){
+        if(!((min_y <= qp.y) && (qp.y <= max_y))){
+            return MIN(((qp.y-min_y) *(qp.y-min_y)), ((qp.y-max_y) *(qp.y-max_y)));
+        }
+        return 0;
+    }
+    else{
+        if(!((min_y <= qp.y) && (qp.y <= max_y))){
+            double low = MIN((qp.y-min_y)*(qp.y-min_y) + (qp.x-min_x)*(qp.x-min_x), (qp.y-max_y)*(qp.y-max_y) + (qp.x-min_x)*(qp.x-min_x));
+            double high = MIN((qp.y-min_y)*(qp.y-min_y)+(qp.x-max_x)*(qp.x-max_x), (qp.y-max_y)*(qp.y-max_y)+(qp.x-max_x)*(qp.x-max_x));
+            return MIN(low, high);
+        }
+        return MIN(((qp.x-min_x)*(qp.x-min_x)), ((qp.x-max_x)*(qp.x-max_x)));
+    }
+}
 int MySearchCallback(int id, void* arg) 
 {
     /* Note: -1 to make up for the +1 when data was inserted */
@@ -70,10 +101,37 @@ void rangeQuery(RTREENODE *r_node, struct point qp, double radius)
     else{
         for(i=0;i<MAXCARD;i++){
             if(r_node->branch[i].child){
-                if(mbr_point_dist(r_node->branch[i].mbr, qp) <= sqrt(radius)){
+                // check dist btween MBR and point (Range Query point)
+                if(mbr_point_dist(r_node->branch[i].mbr, qp) <= radius){
                     obj_cnt++;
                 }
             }
+        }
+    }
+}
+void kNNQuery(RTREENODE *r_node, struct point qp, int k)
+{
+    int i;
+    if(r_node->level > 0){
+        for(i=0;i<MAXCARD;i++){
+            if(r_node->branch[i].child){
+                r_node->branch[i].mind = min_dist(r_node->branch[i].mbr, qp);
+                min_heap.push(r_node->branch[i]);
+            }
+        }
+        RTREEBRANCH heap_top = min_heap.top();
+        min_heap.pop();
+        kNNQuery(heap_top.child, qp, k);
+    }
+    else{
+        for(i=0;i<MAXCARD;i++){
+            if(r_node->branch[i].child){
+                r_node->branch[i].mind = min_dist(r_node->branch[i].mbr, qp);
+                min_heap.push(r_node->branch[i]);
+            }
+        }
+        for(i=0;i<k;i++){
+            min_heap.pop();
         }
     }
 }
@@ -146,30 +204,24 @@ int main()
         scanf("%lf", &rad);
         
         start_time = clock();
-        rangeQuery(root, query_p,rad*rad);
+        rangeQuery(root, query_p,rad);
         end_time = clock();
         printf("Query Object Count: %d\n", obj_cnt);
         printf("Query Time : %.4lf ms\n", (double)(end_time-start_time));
     }
-    //else if (query == 2){               // kNN Query
-    //     printf("[KNN Query]\n");
-    //     printf("Enter Query Point (x,y):\n");
-    //     printf("ex)30 50\n");
-    //     scanf("%lf %lf", &query_p.x, &query_p.y);
-    //     printf("Enter K:\n");
-    //     scanf("%d", &k);
-    //     start_time = clock();
-    //     kNNquery(kd, query_p, k);
-    //     end_time = clock();
-    //     printf("Query Time : %lf\n", (double)(end_time-start_time)/CLOCKS_PER_SEC);
-    // }
-    // return 0;
-    
-    // int i, nhits;
-    // fprintf (stdout, "nrects = %d ", nrects);   
-    
+    else if (query == 2){               // kNN Query
+        printf("[KNN Query]\n");
+        printf("Enter Query Point (x,y):\n");
+        printf("ex)30 50\n");
+        scanf("%lf %lf", &query_p.x, &query_p.y);
+        printf("Enter K:\n");
+        scanf("%d", &k);
+        start_time = clock();
+        kNNQuery(root, query_p, k);
+        end_time = clock();
+        printf("Query Time : %.4lf ms\n", (double)(end_time-start_time));
+    }
 
     RTreeDestroy (root);
-
     return 0;
 }

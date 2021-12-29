@@ -1,15 +1,18 @@
-SRC = $(wildcard *.c)
-OBJ = $(SRC:.c=.o)
+CC = gcc
+CXX = g++
+CFLAGS = -g -c -w
 
-CFLAGS = -g -O0 -w
-LDFLAGS = -lm
+OBJECTS = rtree.o  test.o
+SRCS = rtree.c test.c
+TARGET = rtree
 
-TARGET = test
+$(TARGET) : $(OBJECTS)
+		$(CXX) -o $(TARGET) $(OBJECTS) -lm
 
-all: $(TARGET)
+rtree.o : rtree.h rtree.c
+		$(CC) $(CFLAGS) -c rtree.c -lm
+test.o :  test.c rtree.h
+		$(CXX) $(CFLAGS) -c test.c rtree.h -lm
 
-test: $(OBJ)
-	$(CC) -o $@ $^ $(LDFLAGS)
-
-clean:
-	rm -rf *.o $(TARGET)
+clean :
+		rm -rf $(OBJECTS) $(TARGET)

@@ -16,7 +16,7 @@ Range, K-NN Query on R-tree : Test
 
 * <b> 실행 방법 </b>:
 
-<br>./test :</br> (실행파일 실행)
+<br>./rtree :</br> (실행파일 실행)
 
 
 * <b> 실행은 출력 따라서 진행 </b>
