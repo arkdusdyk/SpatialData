@@ -12,9 +12,3 @@ Spatial Data Projects & Reviews for Midterm and Final Exam
 ### Spatial Data Project #2: <br>Range Query & KNN Query Processing
 
   * <b>Objective</b> : Comparison of Range Query & KNN Query Processing using Bruteforce, KD-Tree, R-Tree
-
-
-### Exam Reviews
-
-  - Spatial Data Midterm Review
-  - Spatial Data Final Exam Review
