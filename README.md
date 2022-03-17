@@ -1,7 +1,7 @@
 # SpatialData
 Lecture (2021.09 ~ 2021.12) - Prof. 정성원
 
-Spatial Data Projects & Reviews for Midterm and Final Exam
+Spatial Data Projects
 <br>
 
 ### Spatial Data Project #1: <br>Topological Relationships with Real Geo-Data
